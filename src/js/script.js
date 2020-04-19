@@ -63,9 +63,10 @@
       thisProduct.getElements();
       thisProduct.initAccordion();
       thisProduct.initOrderForm();
+      thisProduct.initAmountWidget();
       thisProduct.processOrder();
 
-      console.log('new Product:', thisProduct);
+      //console.log('new Product:', thisProduct);
     }
 
     renderInMenu() {
@@ -79,7 +80,7 @@
       const menuContainer = document.querySelector(select.containerOf.menu);
       /* add element to menu */
       menuContainer.appendChild(thisProduct.element);
-      console.log(thisProduct.element);
+      //console.log(thisProduct.element);
     }
 
     getElements() {
@@ -91,6 +92,7 @@
       thisProduct.cartButton = thisProduct.element.querySelector(select.menuProduct.cartButton);
       thisProduct.priceElem = thisProduct.element.querySelector(select.menuProduct.priceElem);
       thisProduct.imageWrapper = thisProduct.element.querySelector(select.menuProduct.imageWrapper);
+      thisProduct.amountWidgetElem = thisProduct.element.querySelector(select.menuProduct.amountWidget);
     }
 
     initAccordion() {
@@ -101,7 +103,7 @@
 
       /* START: click event listener to trigger */
       thisProduct.accordionTrigger.addEventListener('click', function (event) {
-        console.log(thisProduct.accordionTrigger);
+        //console.log(thisProduct.accordionTrigger);
 
         /* prevent default action for event */
         event.preventDefault();
@@ -120,7 +122,7 @@
 
             /* remove class active for the active product */
             activeProduct.classList.remove('active');
-            console.log(activeProduct);
+            //console.log(activeProduct);
 
             /* END: if the active product isn't the element of thisProduct */
           }
@@ -132,7 +134,7 @@
 
     initOrderForm() {
       const thisProduct = this;
-      console.log('initOrderForm');
+      //console.log('initOrderForm');
 
       thisProduct.form.addEventListener('submit', function (event) {
         event.preventDefault();
@@ -151,31 +153,37 @@
       });
     }
 
+    initAmountWidget() {
+      const thisProduct = this;
+
+      thisProduct.amountWidget = new AmountWidget(thisProduct.amountWidgetElem);
+    }
+
     processOrder() {
       const thisProduct = this;
-      console.log('processOrder');
+      //console.log('processOrder');
 
       /* read all data from the form (using utils.serializeFormToObject) and save it to const formData */
       const formData = utils.serializeFormToObject(thisProduct.form);
-      console.log('formData', formData);
+      //console.log('formData', formData);
 
       /* set variable price to equal thisProduct.data.price */
       let price = thisProduct.data.price;
-      console.log(price);
+      //console.log(price);
 
       /* START LOOP: for each paramId in thisProduct.data.params */
       for (let paramId in thisProduct.data.params) {
         /* save the element in thisProduct.data.params with key paramId as const param */
         const param = thisProduct.data.params[paramId];
-        console.log(param);
-        console.log(paramId);
+        //console.log(param);
+        //console.log(paramId);
 
         /* START LOOP: for each optionId in param.options */
         for (let optionId in param.options) {
 
           /* save the element in param.options with key optionId as const option */
           const option = param.options[optionId];
-          console.log(option);
+          //console.log(option);
 
           const optionSelected = formData.hasOwnProperty(paramId) && formData[paramId].indexOf(optionId) > -1;
 
@@ -198,7 +206,7 @@
           }
           /* find all images in thisProduct.imageWrapper */
           const allImages = thisProduct.imageWrapper.querySelectorAll('.' + paramId + '-' + optionId);
-          console.log(allImages);          
+          //console.log(allImages);          
 
           /* START IF: if option is selected */
           if (optionSelected) {
@@ -208,7 +216,7 @@
 
               /* add class active saved in classNames.menuProduct.imageVisible to image */
               image.classList.add(classNames.menuProduct.imageVisible);
-              console.log(image);
+              //console.log(image);
 
             /* END LOOP: for every image in all images */
             }
@@ -220,7 +228,7 @@
             /* START LOOP: for every image in all images */
             for (let image of allImages) {
 
-              /* remove class from image */
+              /* remove class active saved in classNames.menuProduct.imageVisible from image */
               image.classList.remove(classNames.menuProduct.imageVisible);
 
             /* END LOOP: for every image in all images */
@@ -234,6 +242,15 @@
       }
       /* set the contents of thisProduct.priceElem to be the value of variable price */
       thisProduct.priceElem.innerHTML = price;
+    }
+  }
+
+  class AmountWidget {
+    constructor(element) {
+      const thisWidget = this;
+
+      console.log('AmountWidget:', thisWidget);
+      console.log('constructor arguments:', element);
     }
   }
 

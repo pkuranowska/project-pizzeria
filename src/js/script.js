@@ -293,7 +293,7 @@
 
       /* set the contents of thisProduct.priceElem to be the value of variable price */
       thisProduct.priceElem.innerHTML = thisProduct.price;
-      console.log(thisProduct.params);
+      //console.log(thisProduct.params);
     }
 
     addToCart() {
@@ -374,10 +374,12 @@
 
       thisCart.products = [];
 
+      thisCart.deliveryFee = settings.cart.defaultDeliveryFee;
+
       thisCart.getElements(element);
       thisCart.initActions();
 
-      console.log('new Cart', thisCart);
+      //console.log('new Cart', thisCart);
     }
 
     getElements(element) {
@@ -414,8 +416,28 @@
       thisCart.dom.productList.appendChild(generatedDOM);
 
       thisCart.products.push(new CartProduct(menuProduct, generatedDOM));
-      console.log('thisCart.products', thisCart.products);
- 
+      //console.log('thisCart.products', thisCart.products);
+
+      thisCart.update();
+    }
+
+    update() {
+      const thisCart = this;
+
+      thisCart.totalNumber = 0;
+      thisCart.subtotalPrice = 0;
+
+      for(let thisCartProduct of thisCart.products) {
+
+        thisCart.subtotalPrice += thisCartProduct.price;
+        console.log('subtotal Price', thisCart.subtotalPrice);
+
+        thisCart.totalNumber += thisCartProduct.amount;
+        console.log('totalNumber', thisCart.totalNumber);
+      }
+
+      thisCart.totalPrice = thisCart.subtotalPrice + thisCart.deliveryFee;
+      console.log('totalPrice', thisCart.totalPrice);
     }
   }
 
@@ -423,7 +445,7 @@
     constructor(menuProduct, element) {
       const thisCartProduct = this;
 
-      thisCartProduct.id = menuProduct.id;
+      thisCartProduct.id = menuProduct.id; //skad sie biora te wlasciwosci id, name, price.. ?
       thisCartProduct.name = menuProduct.name;
       thisCartProduct.price = menuProduct.price;
       thisCartProduct.priceSingle = menuProduct.priceSingle;
@@ -433,7 +455,7 @@
       thisCartProduct.getElements(element);
       thisCartProduct.initAmountWidget();
 
-      console.log('new CartProduct', thisCartProduct);
+      //console.log('new CartProduct', thisCartProduct);
       //console.log('productData', menuProduct);
     }
 

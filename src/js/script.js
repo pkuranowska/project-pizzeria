@@ -412,6 +412,10 @@
       thisCart.dom.productList.addEventListener('updated', function(){
         thisCart.update();
       });
+
+      thisCart.dom.productList.addEventListener('remove', function() {
+        thisCart.remove(event.detail.cartProduct);
+      });
     }
 
     add(menuProduct) {
@@ -441,10 +445,10 @@
       for (let thisCartProduct of thisCart.products) {
 
         thisCart.subtotalPrice += thisCartProduct.price;
-        console.log('subtotal Price', thisCart.subtotalPrice);
+        //console.log('subtotal Price', thisCart.subtotalPrice);
 
         thisCart.totalNumber += thisCartProduct.amount;
-        console.log('totalNumber', thisCart.totalNumber);
+        //console.log('totalNumber', thisCart.totalNumber);
       }
 
       thisCart.totalPrice = thisCart.subtotalPrice + thisCart.deliveryFee;
@@ -455,6 +459,21 @@
           elem.innerHTML = thisCart[key];
         }
       }
+    }
+
+    remove(cartProduct) {
+      const thisCart = this;
+
+      /* create const index with a value: index of cartProduct in array thisCart.products */
+      const index = thisCart.products.indexOf(cartProduct);
+      console.log('index', index);
+      /* use splice to remove element with this index from array thisCart.products */
+      thisCart.products.splice(index, 1);
+      console.log('thisCart.products', thisCart.products);
+      /* remove element cartProduct.dom.wrapper from DOM */
+      cartProduct.dom.wrapper.remove();
+      /* use update() to update total price and number of products  */
+      thisCart.update();
     }
   }
 

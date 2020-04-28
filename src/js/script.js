@@ -249,7 +249,7 @@
 
           /* START IF: if option is selected */
           if (optionSelected) {
-            if(!thisProduct.params[paramId]) {
+            if (!thisProduct.params[paramId]) {
               thisProduct.params[paramId] = {
                 label: param.label,
                 options: {},
@@ -391,6 +391,12 @@
 
       thisCart.dom.toggleTrigger = thisCart.dom.wrapper.querySelector(select.cart.toggleTrigger);
       thisCart.dom.productList = thisCart.dom.wrapper.querySelector(select.cart.productList);
+
+      thisCart.renderTotalsKeys = ['totalNumber', 'totalPrice', 'subtotalPrice', 'deliveryFee']; //do omowienia
+
+      for (let key of thisCart.renderTotalsKeys) {
+        thisCart.dom[key] = thisCart.dom.wrapper.querySelectorAll(select.cart[key]); //do omowienia
+      }
     }
 
     initActions() {
@@ -407,11 +413,11 @@
       const thisCart = this;
 
       console.log('adding product', menuProduct);
-       
+
       /* generate HTML based on template */
       const generatedHTML = templates.cartProduct(menuProduct);
       /* create DOM elements using utils.createElementFromHTML */
-      const generatedDOM = utils.createDOMFromHTML(generatedHTML); 
+      const generatedDOM = utils.createDOMFromHTML(generatedHTML);
       /* add element to thisCart.dom.productList */
       thisCart.dom.productList.appendChild(generatedDOM);
 
@@ -427,7 +433,7 @@
       thisCart.totalNumber = 0;
       thisCart.subtotalPrice = 0;
 
-      for(let thisCartProduct of thisCart.products) {
+      for (let thisCartProduct of thisCart.products) {
 
         thisCart.subtotalPrice += thisCartProduct.price;
         console.log('subtotal Price', thisCart.subtotalPrice);
@@ -438,6 +444,12 @@
 
       thisCart.totalPrice = thisCart.subtotalPrice + thisCart.deliveryFee;
       console.log('totalPrice', thisCart.totalPrice);
+
+      for(let key of thisCart.renderTotalsKeys) { //do omowienia
+        for(let elem of thisCart.dom[key]) {
+          elem.innerHTML = thisCart[key];
+        }
+      }
     }
   }
 

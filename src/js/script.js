@@ -32,7 +32,6 @@
         linkIncrease: 'a[href="#more"]',
       },
     },
-    // CODE ADDED START
     cart: {
       productList: '.cart__order-summary',
       toggleTrigger: '.cart__summary',
@@ -51,7 +50,6 @@
       edit: '[href="#edit"]',
       remove: '[href="#remove"]',
     },
-    // CODE ADDED END
   };
 
   const classNames = {
@@ -59,11 +57,9 @@
       wrapperActive: 'active',
       imageVisible: 'active',
     },
-    // CODE ADDED START
     cart: {
       wrapperActive: 'active',
     },
-    // CODE ADDED END
   };
 
   const settings = {
@@ -71,12 +67,15 @@
       defaultValue: 1,
       defaultMin: 1,
       defaultMax: 9,
-    }, // CODE CHANGED
-    // CODE ADDED START
+    },
     cart: {
       defaultDeliveryFee: 20,
     },
-    // CODE ADDED END
+    db: {
+      url: '//localhost:3131',
+      product: 'product',
+      order: 'order',
+    },
   };
 
   const templates = {
@@ -246,7 +245,7 @@
           /* find all images in thisProduct.imageWrapper */
           const allImages = thisProduct.imageWrapper.querySelectorAll('.' + paramId + '-' + optionId);
           //console.log(allImages);          
-          
+
 
           /* START IF: if option is selected */
           if (optionSelected) {
@@ -394,6 +393,10 @@
 
       thisCart.dom.toggleTrigger = thisCart.dom.wrapper.querySelector(select.cart.toggleTrigger);
       thisCart.dom.productList = thisCart.dom.wrapper.querySelector(select.cart.productList);
+      thisCart.dom.form = thisCart.dom.wrapper.querySelector(select.cart.form);
+      thisCart.dom.phone = thisCart.dom.wrapper.querySelector(select.cart.phone);
+      thisCart.dom.address = thisCart.dom.wrapper.querySelector(select.cart.address);
+
 
       thisCart.renderTotalsKeys = ['totalNumber', 'totalPrice', 'subtotalPrice', 'deliveryFee']; //do omowienia
 
@@ -410,12 +413,17 @@
         thisCart.dom.wrapper.classList.toggle(classNames.cart.wrapperActive);
       });
 
-      thisCart.dom.productList.addEventListener('updated', function(){
+      thisCart.dom.productList.addEventListener('updated', function () {
         thisCart.update();
       });
 
-      thisCart.dom.productList.addEventListener('remove', function() {
+      thisCart.dom.productList.addEventListener('remove', function () {
         thisCart.remove(event.detail.cartProduct);
+      });
+
+      thisCart.dom.form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        thisCart.sendOrder();
       });
     }
 
@@ -455,8 +463,8 @@
       thisCart.totalPrice = thisCart.subtotalPrice + thisCart.deliveryFee;
       console.log('totalPrice', thisCart.totalPrice);
 
-      for(let key of thisCart.renderTotalsKeys) { //do omowienia
-        for(let elem of thisCart.dom[key]) {
+      for (let key of thisCart.renderTotalsKeys) { //do omowienia
+        for (let elem of thisCart.dom[key]) {
           elem.innerHTML = thisCart[key];
         }
       }
@@ -476,13 +484,53 @@
       /* use update() to update total price and number of products  */
       thisCart.update();
     }
+
+    sendOrder() {
+      const thisCart = this;
+
+      const url = settings.db.url + '/' + settings.db.order;
+
+      const payload = {
+        address: thisCart.dom.address,
+        phone: thisCart.dom.phone,
+        totalNumber: thisCart.totalNumber,
+        subtotalPrice: thisCart.subtotalPrice,
+        totalPrice: thisCart.totalPrice,
+        deliveryFee: thisCart.deliveryFee,
+        products: [],
+      };
+
+      for(let oneProduct of thisCart.products) {
+        oneProduct.getData();
+        console.log(oneProduct);
+
+        payload.products.push(oneProduct);
+        console.log(payload.products);
+        /* Wynik zwracany przez tą metodę dodaj do tablicy payload.products */
+      }
+
+      const options = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      };
+
+      fetch(url, options)
+        .then(function(response){
+          return response.json();
+        }).then(function(parsedResponse) {
+          console.log('parsedResponse', parsedResponse);
+        });
+    }
   }
 
   class CartProduct {
     constructor(menuProduct, element) {
       const thisCartProduct = this;
 
-      thisCartProduct.id = menuProduct.id; //skad sie biora te wlasciwosci id, name, price.. ?
+      thisCartProduct.id = menuProduct.id;
       thisCartProduct.name = menuProduct.name;
       thisCartProduct.price = menuProduct.price;
       thisCartProduct.priceSingle = menuProduct.priceSingle;
@@ -512,11 +560,11 @@
     initActions() {
       const thisCartProduct = this;
 
-      thisCartProduct.dom.edit.addEventListener('click', function() {
+      thisCartProduct.dom.edit.addEventListener('click', function () {
         event.preventDefault();
       });
 
-      thisCartProduct.dom.remove.addEventListener('click', function() {
+      thisCartProduct.dom.remove.addEventListener('click', function () {
         event.preventDefault();
         thisCartProduct.remove();
         console.log('remove', thisCartProduct);
@@ -548,6 +596,20 @@
 
       thisCartProduct.dom.wrapper.dispatchEvent(event);
     }
+
+    getData() { /* zwraca info o zamawianym produkcie – id, amount, price, priceSingle, params */
+      const thisCartProduct = this;
+      
+      const productData = {
+        id: thisCartProduct.id,
+        amount: thisCartProduct.amount,
+        price: thisCartProduct.price,
+        priceSingle: thisCartProduct.priceSingle,
+        params: thisCartProduct.params,
+      };
+
+      return productData;      
+    }
   }
 
   const app = {
@@ -557,14 +619,34 @@
       //console.log('thisApp.data:', thisApp.data);
 
       for (let productData in thisApp.data.products) {
-        new Product(productData, thisApp.data.products[productData]);
+        //new Product(productData, thisApp.data.products[productData]);
+        new Product(thisApp.data.products[productData].id, thisApp.data.products[productData]);
       }
     },
 
     initData: function () {
       const thisApp = this;
 
-      thisApp.data = dataSource;
+      thisApp.data = {};
+
+      const url = settings.db.url + '/' + settings.db.product;
+
+      fetch(url)
+        .then(function (rawResponse) {
+          return rawResponse.json();
+        })
+        .then(function (parsedResponse) {
+          console.log('parsedResponse', parsedResponse);
+
+          /* save parsedResponse as thisApp.data.products */
+          thisApp.data.products = parsedResponse;
+
+          /* execute initMenu method */
+          thisApp.initMenu();
+        });
+
+      console.log('thisApp.data', JSON.stringify(thisApp.data));
+
     },
 
     initCart: function () {
@@ -583,7 +665,6 @@
       //console.log('templates:', templates);
 
       thisApp.initData();
-      thisApp.initMenu();
       thisApp.initCart();
     },
   };

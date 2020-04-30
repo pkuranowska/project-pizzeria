@@ -246,6 +246,7 @@
           /* find all images in thisProduct.imageWrapper */
           const allImages = thisProduct.imageWrapper.querySelectorAll('.' + paramId + '-' + optionId);
           //console.log(allImages);          
+          
 
           /* START IF: if option is selected */
           if (optionSelected) {
